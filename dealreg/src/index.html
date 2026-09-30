@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tool tổng hợp Dealreg · NTS Hanoi Corp.</title>
+<link rel="icon" href="__LOGO__">
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+
+<!-- Thanh dính khi cuộn -->
+<div class="stickybar" id="stickybar">
+  <div class="in">
+    <img src="__LOGO__" alt="NTS">
+    <span class="t">Tổng hợp Dealreg</span>
+    <span class="muted" id="sticky-count"></span>
+    <span class="spacer"></span>
+    <button class="btn btn-sm" id="sticky-filter">Bộ lọc ↑</button>
+    <button class="btn btn-sm btn-primary" id="sticky-export">Xuất Excel</button>
+  </div>
+</div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="brand-logo"><img src="__LOGO__" alt="NTS Hanoi Corp."></div>
+    <div class="brand-text">
+      <div class="eyebrow">NTS Hanoi Corp. · Phòng Quản lý sản phẩm</div>
+      <h1>Tổng hợp Đăng ký dự án (Dealreg)</h1>
+      <div class="sub" id="hero-sub">Nạp file Excel xuất từ Base Service để bắt đầu. Dữ liệu chỉ xử lý trên máy của bạn.</div>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-glass" id="btn-open">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Nạp file Excel
+      </button>
+      <div class="split" id="export-split">
+        <button class="btn btn-white" id="btn-export" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Xuất Excel
+        </button>
+        <button class="btn btn-white caret" id="btn-export-more" disabled title="Tuỳ chọn xuất">▾</button>
+        <div class="menu hidden" id="export-menu">
+          <button data-exp="filtered">Xuất theo bộ lọc hiện tại<small>Chỉ các phiếu đang hiển thị</small></button>
+          <button data-exp="all">Xuất toàn bộ dữ liệu<small>Bỏ qua mọi bộ lọc</small></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <input type="file" id="file-input" accept=".xlsx,.xls,.xlsm,.csv" multiple hidden>
+
+  <!-- Khu nạp file -->
+  <section class="section" id="upload-section">
+    <div class="drop" id="drop">
+      <div class="big-ico">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13l3 3-3 3"/><path d="M13 19h3"/></svg>
+      </div>
+      <h3>Kéo &amp; thả file Excel vào đây</h3>
+      <p>hoặc <b style="color:var(--teal-700)">bấm để chọn file</b> — hỗ trợ .xlsx / .xls, có thể nạp nhiều file cùng lúc (tự gộp &amp; loại trùng theo ID)</p>
+      <div class="privacy">🔒 Chạy offline 100% — dữ liệu không rời khỏi máy tính của bạn</div>
+    </div>
+  </section>
+
+  <section class="section hidden" id="filebar-section">
+    <div class="filebar" id="filebar"></div>
+    <div id="load-warn"></div>
+  </section>
+
+  <div id="app" class="hidden">
+
+    <!-- Bộ lọc -->
+    <section class="section card filters" id="filters">
+      <div class="card-h">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <h2>Bộ lọc &amp; tìm kiếm</h2>
+        <span class="hint">Kết hợp nhiều bộ lọc cùng lúc · số trong ngoặc là số phiếu khớp</span>
+        <span class="spacer"></span>
+        <button class="btn btn-sm" id="btn-reset">↺ Xoá bộ lọc</button>
+      </div>
+      <div class="card-b">
+        <div class="row row-top">
+          <div class="field">
+            <label for="q">Tìm nhanh — ID, tên phiếu, End user, dự án, BOM, note, email…</label>
+            <div class="searchbox" id="searchbox">
+              <svg class="s-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="input" id="q" type="text" autocomplete="off" placeholder="Nhập từ khoá… (không cần gõ dấu, VD: 934566, su pham, kaspersky edr)">
+              <button class="clear-x" id="q-clear" title="Xoá">✕</button>
+              <div class="suggest hidden" id="suggest"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Khoảng thời gian</label>
+            <div class="daterange">
+              <select class="select" id="date-field" title="Áp dụng khoảng thời gian cho trường">
+                <option value="created">Ngày tạo phiếu</option>
+                <option value="lastUpdate">Cập nhật cuối</option>
+                <option value="timeline">Timeline dự án</option>
+              </select>
+              <input class="input" type="date" id="date-from" title="Từ ngày">
+              <input class="input" type="date" id="date-to" title="Đến ngày">
+              <select class="select" id="date-preset" title="Chọn nhanh">
+                <option value="">Chọn nhanh…</option>
+                <option value="7d">7 ngày qua</option>
+                <option value="30d">30 ngày qua</option>
+                <option value="thisM">Tháng này</option>
+                <option value="lastM">Tháng trước</option>
+                <option value="thisQ">Quý này</option>
+                <option value="lastQ">Quý trước</option>
+                <option value="nextQ">Quý sau</option>
+                <option value="thisY">Năm nay</option>
+                <option value="nextY">Năm sau</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="row row-facets">
+          <div class="field" data-facet="sale"></div>
+          <div class="field" data-facet="creator"></div>
+          <div class="field" data-facet="pm"></div>
+          <div class="field" data-facet="vendor"></div>
+          <div class="field" data-facet="block"></div>
+          <div class="field" data-facet="status"></div>
+        </div>
+
+        <div class="presets" id="quick"></div>
+
+        <button class="adv-toggle" id="adv-toggle">
+          Lọc nâng cao &amp; thiết lập cờ nhắc
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="adv hidden" id="adv">
+          <div class="row row-adv">
+            <div class="field" data-facet="flag"></div>
+            <div class="field" data-facet="result"></div>
+            <div class="field" data-facet="tl"></div>
+            <div class="field" data-facet="reseller"></div>
+            <div class="field" data-facet="overdue"></div>
+            <div class="field" data-facet="issue"></div>
+            <div class="field" data-facet="follower"></div>
+            <div class="field" data-facet="month"></div>
+          </div>
+          <div class="settings">
+            <div class="field">
+              <label for="ref-date">Ngày mốc tính cờ nhắc</label>
+              <input class="input" type="date" id="ref-date">
+            </div>
+            <div class="field">
+              <label for="flag-scope">Áp dụng cờ nhắc cho</label>
+              <select class="select" id="flag-scope">
+                <option value="all">Tất cả phiếu</option>
+                <option value="notRejected">Trừ phiếu Rejected</option>
+                <option value="open">Chỉ phiếu Đang xử lý</option>
+              </select>
+            </div>
+            <div class="muted" style="font-size:12.5px;max-width:560px">
+              Cờ nhắc dựa trên thời điểm cập nhật gần nhất (lấy mốc muộn nhất giữa "Cập nhật lần cuối lúc" và "Cập nhật khối lần cuối lúc"):
+              <span class="flag l1">Mức 1</span> &gt; 1 tháng ·
+              <span class="flag l2">Mức 2</span> &gt; 3 tháng ·
+              <span class="flag l3">Mức 3</span> &gt; 6 tháng ·
+              <span class="flag l4">Mức 4</span> &gt; 1 năm.
+              Tên file xuất lấy theo tháng của ngày mốc.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="activebar" id="activebar"></div>
+    </section>
+
+    <!-- Cảnh báo nhắc update -->
+    <section class="section" id="alert"></section>
+
+    <!-- 2 panel donut -->
+    <section class="section hero-grid">
+      <div class="panel">
+        <div class="donut-wrap"><canvas id="c-result"></canvas><div class="donut-center"><div><b id="dc-total">0</b><small>phiếu</small></div></div></div>
+        <div>
+          <h4>Kết quả đăng ký dự án</h4>
+          <ul class="legend" id="lg-result"></ul>
+          <div class="divider"></div>
+          <h4>Phiếu đang xử lý nằm ở bước</h4>
+          <ul class="legend sub" id="lg-steps"></ul>
+        </div>
+      </div>
+      <div class="panel navy">
+        <div class="donut-wrap"><canvas id="c-flag"></canvas><div class="donut-center"><div><b id="dc-flag">0</b><small>cần nhắc</small></div></div></div>
+        <div>
+          <h4>Tình trạng cập nhật (cờ nhắc)</h4>
+          <ul class="legend" id="lg-flag"></ul>
+          <div class="divider"></div>
+          <h4>Timeline dự án</h4>
+          <ul class="legend sub" id="lg-tl"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI -->
+    <section class="section kpis" id="kpis"></section>
+
+    <!-- Insight -->
+    <section class="section card insights">
+      <div class="card-h">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.74V17h8v-2.26A7 7 0 0 0 12 2z"/></svg>
+        <h2>Insight tự động</h2><span class="hint">theo dữ liệu đang lọc</span>
+      </div>
+      <div class="card-b"><ul id="insights"></ul></div>
+    </section>
+
+    <!-- Biểu đồ -->
+    <section class="section charts">
+      <div class="card span-7">
+        <div class="card-h"><h3>Số phiếu theo Sale</h3><span class="hint">bấm cột để lọc</span></div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-sale"></canvas></div></div>
+      </div>
+      <div class="card span-5">
+        <div class="card-h"><h3>Số phiếu theo Hãng</h3><span class="hint">bấm thanh để lọc</span></div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-vendor"></canvas></div></div>
+      </div>
+      <div class="card span-7">
+        <div class="card-h"><h3>PM phụ trách (Người thực hiện)</h3><span class="hint">phân theo cờ nhắc · bấm cột để lọc</span></div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-pm"></canvas></div></div>
+      </div>
+      <div class="card span-5">
+        <div class="card-h"><h3>Tiến độ xử lý (Tên khối)</h3><span class="hint">bấm thanh để lọc</span></div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-block"></canvas></div></div>
+      </div>
+      <div class="card span-8">
+        <div class="card-h">
+          <h3>Xu hướng phiếu tạo mới &amp; kết quả</h3>
+          <span class="spacer"></span>
+          <div class="seg" id="trend-gran"><button data-g="week">Tuần</button><button data-g="month" class="on">Tháng</button><button data-g="quarter">Quý</button></div>
+        </div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-trend"></canvas></div></div>
+      </div>
+      <div class="card span-4">
+        <div class="card-h"><h3>Số phiếu theo Người tạo</h3><span class="hint">bấm để lọc</span></div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-creator"></canvas></div></div>
+      </div>
+      <div class="card span-7">
+        <div class="card-h"><h3>Pipeline theo Timeline dự án (quý)</h3><span class="hint">không tính phiếu Rejected</span></div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-pipe"></canvas></div></div>
+      </div>
+      <div class="card span-5">
+        <div class="card-h"><h3>Top Reseller / Partner</h3><span class="hint">bấm để lọc</span></div>
+        <div class="card-b"><div class="chart-box"><canvas id="c-reseller"></canvas></div></div>
+      </div>
+    </section>
+
+    <!-- Bảng kết quả -->
+    <section class="section card" id="results">
+      <div class="card-h">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+        <h2>Danh sách phiếu đăng ký</h2>
+        <span class="hint" id="tbl-hint"></span>
+        <span class="spacer"></span>
+        <div class="colpick">
+          <button class="btn btn-sm" id="btn-cols">☰ Cột hiển thị</button>
+          <div class="menu hidden" id="cols-menu"></div>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table class="grid" id="grid"><thead></thead><tbody></tbody></table></div>
+      <div class="tbl-foot">
+        <span class="muted">Hiển thị</span>
+        <select class="select" id="page-size" style="width:auto;height:32px">
+          <option>25</option><option selected>50</option><option>100</option><option>200</option>
+        </select>
+        <span class="muted" id="page-info"></span>
+        <div class="pager" id="pager"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="in">
+    <img src="__LOGO__" alt="NTS">
+    <span class="t">Dữ liệu được tổng hợp nội bộ từ phòng Quản lý sản phẩm - Công ty Nam Trường Sơn Hà Nội</span>
+    <span class="v">Tool tổng hợp Dealreg · v__VERSION__ · chạy offline</span>
+  </div>
+</footer>
+
+<div id="layer"></div>
+
+<script>
+/*__XLSX__*/
+</script>
+<script>
+/*__CHARTJS__*/
+</script>
+<script>
+/*__DATALABELS__*/
+</script>
+<script>
+/*__APP__*/
+</script>
+</body>
+</html>
