@@ -113,7 +113,7 @@ const VENDOR_ALIAS = { optswat: 'opswat', opswatt: 'opswat', kaspesky: 'kaspersk
 const VENDOR_CANON = { opswat: 'OPSWAT', gtb: 'GTB', hcl: 'HCL', arcserve: 'Arcserve', kaspersky: 'Kaspersky', barracuda: 'Barracuda', safetica: 'Safetica', sophos: 'Sophos', delinea: 'Delinea', progress: 'Progress', infoexpress: 'InfoExpress', netgear: 'Netgear', netscout: 'NETSCOUT', acronis: 'Acronis', opentext: 'OpenText', proofpoint: 'Proofpoint', zecurion: 'Zecurion', stellar: 'Stellar', radware: 'Radware', trellix: 'Trellix', forcepoint: 'Forcepoint', secpod: 'SecPod', thales: 'Thales', cloudflare: 'Cloudflare', qualys: 'Qualys', fortinet: 'Fortinet', paloalto: 'Palo Alto', checkpoint: 'Check Point', veeam: 'Veeam', manageengine: 'ManageEngine', solarwinds: 'SolarWinds', gigamon: 'Gigamon', imperva: 'Imperva', tenable: 'Tenable', rapid7: 'Rapid7', trendmicro: 'Trend Micro', eset: 'ESET', bitdefender: 'Bitdefender' };
 
 const FLOW = ['Tạo yêu cầu đăng ký dự án', 'Tự động tìm PM hãng', 'PM tiếp nhận', 'PM gửi DR đến hãng', 'Hãng check', 'Approved', 'Rejected'];
-const BLOCK_COLORS = ['#94a3b8', '#7c8fb5', '#2b7fd8', '#6b5bd6', '#f59e0b', '#1fa55b', '#e5484d', '#0e9486', '#c2410c', '#64748b'];
+const BLOCK_COLORS = ['#94a3b8', '#7c8fb5', '#2b7fd8', '#6b5bd6', '#f59e0b', '#1fa55b', '#e5484d', '#10b7de', '#c2410c', '#64748b'];
 const RESULT = {
   'Approved': { c: '#1fa55b', cls: 'b-ok' },
   'Đang xử lý': { c: '#f59e0b', cls: 'b-warn' },
@@ -568,7 +568,7 @@ const QUICK = [
   { t: 'Timeline ≤ 30 ngày', set: { tl: ['d30'] }, c: '#2b7fd8' },
   { t: 'Đã qua timeline – chưa xong', set: { issue: ['tlPastOpen'] }, c: '#e5484d' },
   { t: 'Quá hạn SLA', set: { issue: ['slaOver'] }, c: '#8b1538' },
-  { t: 'Trùng EU + Hãng', set: { issue: ['dup'] }, c: '#0e9486' },
+  { t: 'Trùng EU + Hãng', set: { issue: ['dup'] }, c: '#10b7de' },
   { t: 'Approved', set: { result: ['Approved'] }, c: '#1fa55b' },
   { t: 'Rejected', set: { result: ['Rejected'] }, c: '#e5484d' },
 ];
@@ -592,7 +592,7 @@ function renderHeroSub() {
   $('#hero-sub').textContent = `${S.files.map(f => f.name).join(', ')} — ${fmtN(S.rows.length)} phiếu · tạo từ ${fmtD(cs[0])} đến ${fmtD(cs[cs.length - 1])} · cập nhật mới nhất ${fmtDT(lu)} · ngày mốc ${fmtD(S.ref)}`;
 }
 function renderFileBar() {
-  $('#filebar').innerHTML = `<b style="color:var(--teal-900)">Dữ liệu nguồn:</b>` + S.files.map((f, i) =>
+  $('#filebar').innerHTML = `<b style="color:var(--brand-900)">Dữ liệu nguồn:</b>` + S.files.map((f, i) =>
     `<span class="filechip" title="Sheet: ${esc(f.sheet)} · ${f.rows} dòng · ${f.added} phiếu mới · ${f.dup} trùng ID">📄 <b>${esc(f.name)}</b> · ${fmtN(f.rows)} dòng${f.dup ? ` · ${f.dup} trùng` : ''}</span>`).join('')
     + `<span class="muted">→ ${fmtN(S.rows.length)} phiếu duy nhất</span><span style="flex:1"></span>
     <button class="btn btn-sm" id="btn-add">＋ Nạp thêm file</button><button class="btn btn-sm btn-ghost" id="btn-clear">Xoá dữ liệu</button>`;
@@ -659,14 +659,14 @@ function renderKPIs() {
   const med = median(appr);
   const nSale = new Set(V.map(r => r.sale).filter(Boolean)).size, nV = new Set(V.flatMap(r => r.vendors)).size;
   const K = [
-    { l: 'Tổng số phiếu', v: fmtN(n), s: `${nSale} sale · ${nV} hãng`, c: 'var(--teal-600)' },
+    { l: 'Tổng số phiếu', v: fmtN(n), s: `${nSale} sale · ${nV} hãng`, c: 'var(--brand-600)' },
     { l: 'Đang xử lý', v: fmtN(O), s: `${pct(O, n)} tổng số`, c: '#f59e0b', q: { result: ['Đang xử lý'] } },
     { l: 'Approved', v: fmtN(A), s: `${pct(A, n)} tổng số`, c: '#1fa55b', q: { result: ['Approved'] } },
     { l: 'Rejected', v: fmtN(R), s: `${pct(R, n)} tổng số`, c: '#e5484d', q: { result: ['Rejected'] } },
     { l: 'Tỷ lệ duyệt', v: pct(A, A + R), s: `trên ${fmtN(A + R)} phiếu đã có kết quả`, c: 'var(--navy-500)' },
     { l: 'Cần nhắc update', v: fmtN(flg), s: '> 1 tháng không cập nhật', c: '#f07c1b', q: { flag: ['1', '2', '3', '4'] } },
     { l: 'Quá hạn SLA', v: fmtN(sla), s: 'phiếu đang xử lý quá hạn', c: '#8b1538', q: { issue: ['slaOver'] } },
-    { l: 'TG duyệt (trung vị)', v: med == null ? '—' : (med < 1 ? '< 1' : fmtN(Math.round(med))) , s: 'ngày, từ tạo → Approved', c: 'var(--teal-700)' },
+    { l: 'TG duyệt (trung vị)', v: med == null ? '—' : (med < 1 ? '< 1' : fmtN(Math.round(med))) , s: 'ngày, từ tạo → Approved', c: 'var(--brand-700)' },
   ];
   $('#kpis').innerHTML = K.map((k, i) => `<div class="kpi ${k.q ? 'click' : ''}" data-k="${i}" style="--c:${k.c}" ${k.q ? 'title="Bấm để lọc"' : ''}><div class="k-l">${k.l}</div><div class="k-v">${k.v}</div><div class="k-s">${k.s}</div></div>`).join('');
   S._kpi = K;
@@ -784,7 +784,7 @@ function renderCharts() {
   chart('c-sale', stackByResult(r => r.sale || '__none', 15, personLabel, 'sale'));
   // Hãng
   { const top = topN(countBy(V, r => r.vendors), 15); const labs = top.map(([k]) => S.vendorLabel.get(k) || k);
-    chart('c-vendor', barCfg({ labels: labs, datasets: [{ label: 'Số phiếu', data: top.map(x => x[1]), backgroundColor: grad('#1f4ea3', true) }], horizontal: true, onPick: i => toggleFacet('vendor', top[i][0]) })); }
+    chart('c-vendor', barCfg({ labels: labs, datasets: [{ label: 'Số phiếu', data: top.map(x => x[1]), backgroundColor: grad('#0b5cb5', true) }], horizontal: true, onPick: i => toggleFacet('vendor', top[i][0]) })); }
   // PM theo cờ
   { const tot = countBy(V, r => r.pms); const top = topN(tot, 14).map(([k]) => k);
     const fk = ['0', '1', '2', '3', '4', 'na'].filter(f => V.some(r => r.flag === f));
@@ -802,14 +802,14 @@ function renderCharts() {
     const ln = (label, data, c, fill) => ({ type: 'line', label, data, borderColor: c, backgroundColor: fill ? (ctx => { const a = ctx.chart.chartArea; if (!a) return c + '22'; const gr = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom); gr.addColorStop(0, c + '55'); gr.addColorStop(1, c + '00'); return gr; }) : c, fill, tension: .35, pointRadius: 3.5, pointHoverRadius: 6, borderWidth: 2.5, pointBackgroundColor: '#fff', pointBorderWidth: 2 });
     const cfg = barCfg({ labels: keys.map(lab), datasets: [], stacked: false, totals: false });
     cfg.type = 'line';
-    cfg.data.datasets = [ln('Tạo mới', cnt(() => true), '#1f4ea3', true), ln('Approved', cnt(r => r.result === 'Approved'), '#1fa55b'), ln('Rejected', cnt(r => r.result === 'Rejected'), '#e5484d'), ln('Đang xử lý', cnt(r => r.open), '#f59e0b')];
+    cfg.data.datasets = [ln('Tạo mới', cnt(() => true), '#0b5cb5', true), ln('Approved', cnt(r => r.result === 'Approved'), '#1fa55b'), ln('Rejected', cnt(r => r.result === 'Rejected'), '#e5484d'), ln('Đang xử lý', cnt(r => r.open), '#f59e0b')];
     cfg.options.plugins.legend.display = true;
-    cfg.options.plugins.datalabels = { display: c => c.datasetIndex === 0 && keys.length <= 24, align: 'top', color: '#1f4ea3', font: { weight: 700, size: 10.5 } };
+    cfg.options.plugins.datalabels = { display: c => c.datasetIndex === 0 && keys.length <= 24, align: 'top', color: '#0b5cb5', font: { weight: 700, size: 10.5 } };
     cfg.options.interaction = { mode: 'index', intersect: false };
     chart('c-trend', cfg); }
   // Người tạo
   { const top = topN(countBy(V, r => r.creator || '__none'), 15); const labs = top.map(([k]) => personLabel(k));
-    chart('c-creator', barCfg({ labels: labs.map(shortName), fullLabels: labs, datasets: [{ label: 'Số phiếu', data: top.map(x => x[1]), backgroundColor: grad('#16b09c', true) }], horizontal: true, onPick: i => toggleFacet('creator', top[i][0]) })); }
+    chart('c-creator', barCfg({ labels: labs.map(shortName), fullLabels: labs, datasets: [{ label: 'Số phiếu', data: top.map(x => x[1]), backgroundColor: grad('#10b7de', true) }], horizontal: true, onPick: i => toggleFacet('creator', top[i][0]) })); }
   // Pipeline theo quý timeline
   { const P = V.filter(r => r.timeline && r.result !== 'Rejected');
     const keys = [...new Set(P.map(r => quarterKey(r.timeline)))].sort();
@@ -819,7 +819,7 @@ function renderCharts() {
     chart('c-pipe', cfg); }
   // Reseller
   { const top = topN(countBy(V, r => r.resellers), 12); const labs = top.map(([k]) => S.resellerLabel.get(k) || k);
-    chart('c-reseller', barCfg({ labels: labs, datasets: [{ label: 'Số phiếu', data: top.map(x => x[1]), backgroundColor: grad('#f7931e', true) }], horizontal: true, onPick: i => toggleFacet('reseller', top[i][0]) })); }
+    chart('c-reseller', barCfg({ labels: labs, datasets: [{ label: 'Số phiếu', data: top.map(x => x[1]), backgroundColor: grad('#f26522', true) }], horizontal: true, onPick: i => toggleFacet('reseller', top[i][0]) })); }
 }
 
 /* ---------------------------------------------------------------- table */
@@ -1013,19 +1013,19 @@ const XS = {
 };
 const F = (o = {}) => ({ name: 'Calibri', sz: 11, ...o });
 const ST = {
-  head: { font: F({ bold: true, color: { rgb: 'FFFFFF' } }), fill: { patternType: 'solid', fgColor: { rgb: '0A7D73' } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: XS.border },
+  head: { font: F({ bold: true, color: { rgb: 'FFFFFF' } }), fill: { patternType: 'solid', fgColor: { rgb: '0B5CB5' } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: XS.border },
   cell: { font: F(), alignment: { vertical: 'top', wrapText: false }, border: XS.border },
   wrap: { font: F(), alignment: { vertical: 'top', wrapText: true }, border: XS.border },
   center: { font: F(), alignment: { vertical: 'top', horizontal: 'center' }, border: XS.border },
   bold: { font: F({ bold: true }), alignment: { vertical: 'top' }, border: XS.border },
   link: { font: F({ color: { rgb: '2B63C6' }, underline: true }), alignment: { vertical: 'top' }, border: XS.border },
-  title: { font: F({ bold: true, sz: 18, color: { rgb: '064E48' } }) },
+  title: { font: F({ bold: true, sz: 18, color: { rgb: '0A4F9E' } }) },
   sub: { font: F({ italic: true, color: { rgb: '62727F' } }) },
-  sect: { font: F({ bold: true, sz: 12, color: { rgb: 'FFFFFF' } }), fill: { patternType: 'solid', fgColor: { rgb: '1F4EA3' } }, alignment: { vertical: 'center' } },
-  kl: { font: F({ color: { rgb: '1C2B36' } }), fill: { patternType: 'solid', fgColor: { rgb: 'EEFBF8' } }, border: XS.border, alignment: { vertical: 'center' } },
-  kv: { font: F({ bold: true, sz: 12, color: { rgb: '0A7D73' } }), border: XS.border, alignment: { horizontal: 'right', vertical: 'center' } },
-  total: { font: F({ bold: true }), fill: { patternType: 'solid', fgColor: { rgb: 'D7F6F0' } }, border: XS.border },
-  foot: { font: F({ italic: true, color: { rgb: '0A7D73' } }) },
+  sect: { font: F({ bold: true, sz: 12, color: { rgb: 'FFFFFF' } }), fill: { patternType: 'solid', fgColor: { rgb: 'F26522' } }, alignment: { vertical: 'center' } },
+  kl: { font: F({ color: { rgb: '1C2B36' } }), fill: { patternType: 'solid', fgColor: { rgb: 'EEF6FE' } }, border: XS.border, alignment: { vertical: 'center' } },
+  kv: { font: F({ bold: true, sz: 12, color: { rgb: '0B5CB5' } }), border: XS.border, alignment: { horizontal: 'right', vertical: 'center' } },
+  total: { font: F({ bold: true }), fill: { patternType: 'solid', fgColor: { rgb: 'D5E8FB' } }, border: XS.border },
+  foot: { font: F({ italic: true, color: { rgb: '0B5CB5' } }) },
 };
 const FLAG_FILL = { '1': ['F2B705', '3D2E00'], '2': ['F07C1B', 'FFFFFF'], '3': ['E03A3E', 'FFFFFF'], '4': ['8B1538', 'FFFFFF'], '0': ['E3F6EC', '137A41'], na: ['EEF2F5', '62727F'] };
 const RES_FILL = { 'Approved': ['E3F6EC', '137A41'], 'Rejected': ['FDE8E8', 'B3262B'], 'Đang xử lý': ['FFF4DC', '92590A'], 'Hoàn thành khác': ['EEF2F5', '62727F'] };
@@ -1110,7 +1110,7 @@ function exportExcel(mode) {
       if (S.from || S.to) fl.push(`${$('#date-field').selectedOptions[0].text}: ${S.from ? fmtD(S.from) : '…'} → ${S.to ? fmtD(S.to) : '…'}`);
       for (const fk of Object.keys(FACETS)) if (S.f[fk].size) fl.push(`${FACETS[fk].label}: ${[...S.f[fk]].map(v => facetLabel(fk, v)).join(', ')}`);
     }
-    b.set(r++, 0, `Phạm vi dữ liệu: ${mode === 'all' ? 'Toàn bộ dữ liệu' : fl.length ? 'Theo bộ lọc — ' + fl.join(' | ') : 'Toàn bộ (không lọc)'}`, { font: F({ bold: true, color: { rgb: '1F4EA3' } }), alignment: { wrapText: true, vertical: 'top' } }); b.merge(r - 1, 0, r - 1, 5); b.rowsH[r - 1] = { hpt: fl.length > 2 ? 45 : 18 };
+    b.set(r++, 0, `Phạm vi dữ liệu: ${mode === 'all' ? 'Toàn bộ dữ liệu' : fl.length ? 'Theo bộ lọc — ' + fl.join(' | ') : 'Toàn bộ (không lọc)'}`, { font: F({ bold: true, color: { rgb: '0B5CB5' } }), alignment: { wrapText: true, vertical: 'top' } }); b.merge(r - 1, 0, r - 1, 5); b.rowsH[r - 1] = { hpt: fl.length > 2 ? 45 : 18 };
     r++;
     b.set(r, 0, 'CHỈ TIÊU CHÍNH', ST.sect); for (let c = 1; c <= 2; c++) b.set(r, c, '', ST.sect); b.merge(r, 0, r, 2); r++;
     const appr = rows.filter(x => x.result === 'Approved' && x.procDays != null).map(x => x.procDays);
