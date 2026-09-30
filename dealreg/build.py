@@ -12,6 +12,8 @@ import pathlib
 VERSION = "1.0.0"
 ROOT = pathlib.Path(__file__).resolve().parent
 OUT = ROOT.parent / "Tool tổng hợp Dealreg.html"
+# Bản trùng nội dung cho GitHub Pages (URL gọn: https://<user>.github.io/<repo>/)
+PAGES = ROOT.parent / "index.html"
 
 
 def read(p):
@@ -38,6 +40,7 @@ def main():
         html = html.replace(k, v, 1)
     html = html.replace("__LOGO__", logo).replace("__VERSION__", VERSION)
     OUT.write_text(html, encoding="utf-8")
+    PAGES.write_text(html, encoding="utf-8")
     print(f"OK -> {OUT} ({OUT.stat().st_size / 1024:.0f} KB)")
 
 
